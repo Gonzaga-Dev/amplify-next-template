@@ -13,6 +13,7 @@ const client = generateClient<Schema>();
 export default function App() {
   const [participants, setParticipants] = useState<Array<Schema["Todo"]["type"]>>([]);
   const [selected, setSelected] = useState<Schema["Todo"]["type"] | null>(null);
+  const [currentRoll, setCurrentRoll] = useState<Schema["Todo"]["type"] | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [showFireworks, setShowFireworks] = useState(false);
   const [newParticipant, setNewParticipant] = useState("");
@@ -60,22 +61,25 @@ export default function App() {
 
     setIsDrawing(true);
     setShowFireworks(false);
+    setSelected(null);
 
-    let rounds = 20;
-    let delay = 50;
+    let rounds = 10;
+    let delay = 30;
 
     async function roll() {
-      const randomIndex = await getQuantumRandomIndex(participants.length);
-      setSelected(participants[randomIndex]);
+      const randomIndex = Math.floor(Math.random() * participants.length);
+      setCurrentRoll(participants[randomIndex]);
       rounds--;
 
       if (rounds > 0) {
-        delay += 20;
+        delay += 15;
         setTimeout(roll, delay);
       } else {
-        setIsDrawing(false);
+        const finalIndex = await getQuantumRandomIndex(participants.length);
+        setSelected(participants[finalIndex]);
         setShowFireworks(true);
-        setTimeout(() => setShowFireworks(false), 4000);
+        setTimeout(() => setShowFireworks(false), 3000);
+        setIsDrawing(false);
       }
     }
 
@@ -84,19 +88,20 @@ export default function App() {
 
   return (
     <main style={{
-      padding: "2rem",
-      backgroundColor: "#000000",
+      width: "100%",
+      maxWidth: "100%",
       minHeight: "100vh",
+      backgroundColor: "#000000",
       color: "#FFCE00",
       fontFamily: "Arial, sans-serif",
-      position: "relative",
-      overflow: "hidden",
       display: "flex",
       flexDirection: "column",
-      alignItems: "center"
+      alignItems: "center",
+      padding: "2rem",
+      boxSizing: "border-box",
+      overflow: "hidden"
     }}>
-      
-      {/* Fogos de artifício */}
+
       {showFireworks && (
         <div style={{
           position: "absolute",
@@ -119,7 +124,7 @@ export default function App() {
                 backgroundColor: i % 2 === 0 ? "#FFCE00" : "#FF8000",
                 borderRadius: "50%",
                 animation: "explode 1s ease-out forwards",
-                animationDelay: `${i * 0.2}s`,
+                animationDelay: `${i * 0.2}s`
               }}
             />
           ))}
@@ -134,7 +139,6 @@ export default function App() {
 
       <h1 style={{
         textAlign: "center",
-        color: "#FFCE00",
         marginBottom: "2rem",
         fontSize: "clamp(1.5rem, 5vw, 2.5rem)",
         zIndex: 1
@@ -166,7 +170,6 @@ export default function App() {
             color: "#FFCE00"
           }}
         />
-
         <button
           onClick={addParticipant}
           style={{
@@ -181,39 +184,6 @@ export default function App() {
           }}
         >
           Participar
-        </button>
-
-        <button
-          onClick={drawParticipant}
-          disabled={isDrawing}
-          style={{
-            backgroundColor: isDrawing ? "#666666" : "#FFCE00",
-            color: "#000000",
-            border: "none",
-            padding: "10px 20px",
-            fontSize: "1rem",
-            borderRadius: "5px",
-            cursor: isDrawing ? "not-allowed" : "pointer",
-            opacity: isDrawing ? 0.7 : 1,
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            flexShrink: 0
-          }}
-        >
-          {isDrawing && (
-            <div
-              style={{
-                border: "3px solid #000000",
-                borderTop: "3px solid #FFCE00",
-                borderRadius: "50%",
-                width: "16px",
-                height: "16px",
-                animation: "spin 1s linear infinite",
-              }}
-            />
-          )}
-          🎲 {isDrawing ? "Sorteando..." : "Iniciar Sorteio"}
         </button>
       </div>
 
@@ -230,7 +200,6 @@ export default function App() {
               marginBottom: "10px",
               borderRadius: "5px",
               transition: "all 0.3s ease",
-              animation: selected?.id === participant.id ? "pulse 1s infinite alternate" : "none",
               textAlign: "center"
             }}
           >
@@ -245,6 +214,25 @@ export default function App() {
           <p style={{ fontSize: "2rem", fontWeight: "bold", color: "#FF8000" }}>{selected.content}</p>
         </div>
       )}
+
+      <div style={{ marginTop: "3rem", zIndex: 1 }}>
+        <button
+          onClick={drawParticipant}
+          disabled={isDrawing}
+          style={{
+            backgroundColor: isDrawing ? "#666666" : "#FFCE00",
+            color: "#000000",
+            border: "none",
+            padding: "10px 20px",
+            fontSize: "1rem",
+            borderRadius: "5px",
+            cursor: isDrawing ? "not-allowed" : "pointer",
+            opacity: isDrawing ? 0.7 : 1
+          }}
+        >
+          🎲 {isDrawing ? "Sorteando..." : "Iniciar Sorteio"}
+        </button>
+      </div>
 
       <style>{`
         @keyframes pulse {
