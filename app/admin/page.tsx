@@ -5,7 +5,6 @@ import type { Schema } from "@/amplify/data/resource";
 import { useState } from "react";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
-import "@aws-amplify/ui-react/styles.css";
 
 Amplify.configure(outputs);
 
@@ -38,24 +37,47 @@ export default function AdminPage() {
   }
 
   return (
-    <main style={{ padding: "2rem", backgroundColor: "#000000", minHeight: "100vh", color: "#FFCE00", fontFamily: "Arial, sans-serif" }}>
-      <h1 style={{ textAlign: "center", marginBottom: "2rem" }}>
+    <main style={{
+      padding: "2rem",
+      backgroundColor: "#000000",
+      minHeight: "100vh",
+      color: "#FFCE00",
+      fontFamily: "Arial, sans-serif",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center"
+    }}>
+      <h1 style={{
+        textAlign: "center",
+        marginBottom: "2rem",
+        fontSize: "clamp(1.5rem, 5vw, 2.5rem)"
+      }}>
         Área Administrativa
       </h1>
 
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: "2rem" }}>
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "center",
+        gap: "1rem",
+        marginBottom: "2rem",
+        width: "100%",
+        maxWidth: "400px"
+      }}>
         <button
           onClick={clearAllParticipants}
           disabled={isClearing}
           style={{
-            backgroundColor: "#FF8000",
+            backgroundColor: isClearing ? "#666666" : "#FF8000",
             color: "#000000",
             border: "none",
             padding: "15px 30px",
             fontSize: "1.2rem",
             borderRadius: "8px",
             cursor: isClearing ? "not-allowed" : "pointer",
-            opacity: isClearing ? 0.6 : 1,
+            opacity: isClearing ? 0.7 : 1,
+            width: "100%",
           }}
         >
           {isClearing ? "Apagando..." : "🗑️ Limpar Todos os Participantes"}
@@ -63,7 +85,14 @@ export default function AdminPage() {
       </div>
 
       {message && (
-        <p style={{ textAlign: "center", marginTop: "2rem", color: "#FFCE00", fontWeight: "bold" }}>
+        <p style={{
+          textAlign: "center",
+          marginTop: "2rem",
+          color: message.includes("sucesso") ? "#FFCE00" : "#FF8000",
+          fontWeight: "bold",
+          fontSize: "1.2rem",
+          maxWidth: "400px"
+        }}>
           {message}
         </p>
       )}
