@@ -24,9 +24,7 @@ export default function AdminPage() {
     try {
       const result = await client.models.Todo.list();
       const deletions = result.data.map((item) => client.models.Todo.delete({ id: item.id }));
-
       await Promise.all(deletions);
-
       setMessage("Todos os participantes foram apagados com sucesso.");
     } catch (error) {
       console.error(error);
@@ -38,15 +36,18 @@ export default function AdminPage() {
 
   return (
     <main style={{
-      padding: "2rem",
-      backgroundColor: "#000000",
+      width: "100%",
+      maxWidth: "100%",
       minHeight: "100vh",
+      backgroundColor: "#000000",
       color: "#FFCE00",
       fontFamily: "Arial, sans-serif",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      justifyContent: "center"
+      justifyContent: "center",
+      padding: "2rem",
+      boxSizing: "border-box"
     }}>
       <h1 style={{
         textAlign: "center",
@@ -58,8 +59,8 @@ export default function AdminPage() {
 
       <div style={{
         display: "flex",
-        flexWrap: "wrap",
-        justifyContent: "center",
+        flexDirection: "column",
+        alignItems: "center",
         gap: "1rem",
         marginBottom: "2rem",
         width: "100%",
@@ -77,7 +78,7 @@ export default function AdminPage() {
             borderRadius: "8px",
             cursor: isClearing ? "not-allowed" : "pointer",
             opacity: isClearing ? 0.7 : 1,
-            width: "100%",
+            width: "100%"
           }}
         >
           {isClearing ? "Apagando..." : "🗑️ Limpar Todos os Participantes"}
