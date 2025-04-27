@@ -3,7 +3,7 @@
 Aplicativo web desenvolvido para facilitar a realização de sorteios online. Integra cadastro de participantes e o sorteio na mesma ferramenta.
 
 
----
+
 
 
 ## 🔧 Tecnologias Utilizadas
@@ -15,7 +15,7 @@ Aplicativo web desenvolvido para facilitar a realização de sorteios online. In
 - **Quantum Random Number Generator (QRNG)** (Sorteio com aleatoriedade verdadeira via ANU)
 
 
----
+
 
 
 ## 🔍 Funcionalidades
@@ -29,7 +29,7 @@ Aplicativo web desenvolvido para facilitar a realização de sorteios online. In
 - Página 100% responsiva para desktop e dispositivos móveis
 
 
----
+
 
 
 ## 📊 Principais Features
@@ -44,7 +44,7 @@ Aplicativo web desenvolvido para facilitar a realização de sorteios online. In
 | Design responsivo (mobile-first) | ✅ Implementado |
 
 
----
+
 
 
 ## 🚀 Melhorias Futuras
@@ -55,7 +55,7 @@ Aplicativo web desenvolvido para facilitar a realização de sorteios online. In
 - **Customização visual** (cores e logo da empresa)
 
 
----
+
 
 
 ## 💼 Licença
