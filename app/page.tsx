@@ -115,9 +115,132 @@ export default function App() {
       overflow: "hidden"
     }}>
 
-      {/* Fireworks e layout da página... permanece igual ao anterior */}
+      {showFireworks && (
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 0
+        }}>
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                top: Math.random() * 100 + "%",
+                left: Math.random() * 100 + "%",
+                width: "10px",
+                height: "10px",
+                backgroundColor: i % 2 === 0 ? "#FFCE00" : "#FF8000",
+                borderRadius: "50%",
+                animation: "explode 1s ease-out forwards",
+                animationDelay: `${i * 0.2}s`
+              }}
+            />
+          ))}
+          <style>{`
+            @keyframes explode {
+              0% { transform: scale(0) translateY(0); opacity: 1; }
+              100% { transform: scale(2) translateY(-100px); opacity: 0; }
+            }
+          `}</style>
+        </div>
+      )}
 
-      {/* Input, botão de participar, lista de participantes, botão de sorteio... tudo igual */}
+      <h1 style={{ textAlign: "center", marginBottom: "2rem", fontSize: "clamp(1.5rem, 5vw, 2.5rem)", zIndex: 1 }}>
+        [Data&AI] Monthly Checkpoint
+      </h1>
+
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "1rem",
+        justifyContent: "center",
+        marginBottom: "2rem",
+        width: "100%",
+        maxWidth: "600px",
+        zIndex: 1
+      }}>
+        <input
+          value={newParticipant}
+          onChange={(e) => setNewParticipant(e.target.value)}
+          placeholder="Nome Completo"
+          style={{
+            flex: "1 1 300px",
+            padding: "10px",
+            fontSize: "1rem",
+            borderRadius: "5px",
+            border: "2px solid #FFCE00",
+            backgroundColor: "#333333",
+            color: "#FFCE00"
+          }}
+        />
+        <button
+          onClick={addParticipant}
+          style={{
+            backgroundColor: "#FF8000",
+            color: "#000000",
+            border: "none",
+            padding: "10px 20px",
+            fontSize: "1rem",
+            borderRadius: "5px",
+            cursor: "pointer",
+            flexShrink: 0
+          }}
+        >
+          Participar
+        </button>
+      </div>
+
+      <ul style={{ listStyle: "none", padding: 0, width: "100%", maxWidth: "600px", zIndex: 1 }}>
+        {participants.map((participant, index) => (
+          <li
+            key={participant.id}
+            style={{
+              backgroundColor: selected?.id === participant.id ? "#FF8000" : "#333333",
+              color: selected?.id === participant.id ? "#000000" : "#FFCE00",
+              fontWeight: selected?.id === participant.id ? "bold" : "normal",
+              border: selected?.id === participant.id ? "2px solid #FFCE00" : "none",
+              padding: "10px",
+              marginBottom: "10px",
+              borderRadius: "5px",
+              transition: "all 0.3s ease",
+              textAlign: "center"
+            }}
+          >
+            {index + 1}. {participant.content}
+          </li>
+        ))}
+      </ul>
+
+      {selected && (
+        <div style={{ textAlign: "center", marginTop: "2rem", zIndex: 1 }}>
+          <h2 style={{ color: "#FFCE00" }}>Participante Sorteado:</h2>
+          <p style={{ fontSize: "2rem", fontWeight: "bold", color: "#FF8000" }}>{selected.content}</p>
+        </div>
+      )}
+
+      <div style={{ marginTop: "3rem", zIndex: 1 }}>
+        <button
+          onClick={drawParticipant}
+          disabled={isDrawing}
+          style={{
+            backgroundColor: isDrawing ? "#666666" : "#FFCE00",
+            color: "#000000",
+            border: "none",
+            padding: "10px 20px",
+            fontSize: "1rem",
+            borderRadius: "5px",
+            cursor: isDrawing ? "not-allowed" : "pointer",
+            opacity: isDrawing ? 0.7 : 1
+          }}
+        >
+          Iniciar Sorteio
+        </button>
+      </div>
 
       <style>{`
         @keyframes pulse {
