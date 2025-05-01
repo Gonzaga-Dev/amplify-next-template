@@ -235,12 +235,17 @@ export default function App() {
           <h2 style={{ color: "#FFCE00" }}>
             Participante{selected.length > 1 ? "s" : ""} Sorteado{selected.length > 1 ? "s" : ""}:
           </h2>
-          {selected.map(w => (
+          {selected.map((w, idx) => (
             <p
               key={w.id}
-              style={{ fontSize: selected.length > 1 ? "1.2rem" : "2rem", fontWeight: "bold", color: "#FF8000", margin: "0.5rem 0" }}
+              style={{
+                fontSize: selected.length > 1 ? "1.2rem" : "2rem",
+                fontWeight: "bold",
+                color: "#FF8000",
+                margin: "0.5rem 0",
+              }}
             >
-              {w.content}
+              {`${idx + 1}º ${w.content}`}
             </p>
           ))}
         </div>
@@ -282,7 +287,7 @@ export default function App() {
           100% { transform: scale(1.1); }
         }
         @keyframes spin {
-          0% { transform: rotate(0deg); }
+          0% { transform이 rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
       `}</style>
