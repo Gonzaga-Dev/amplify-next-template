@@ -1,61 +1,43 @@
 # [Data&AI] Monthly Checkpoint - Sorteio
 
-Aplicativo web desenvolvido para facilitar a realização de sorteios online. Integra cadastro de participantes e o sorteio na mesma ferramenta.
+Aplicativo de sorteio online construído com **Next.js** e hospedado no **AWS Amplify**, que combina cadastro de participantes e execução de sorteios com aleatoriedade verdadeira via QRNG.
 
+## 🚀 Tecnologias
+- **Next.js** (App Router)  
+- **React** (Client-side)  
+- **AWS Amplify DataStore** (persistência e sincronização)  
+- **AWS Amplify Hosting** (deploy automático)  
+- **QRNG** (ANU API, fallback para `Math.random()`)
 
+## ✨ Funcionalidades Atuais
+- Cadastro e listagem responsiva de participantes em ordem de inscrição  
+- Aleatoriedade quântica para sorteios justos  
+- Suporte a múltiplos sorteios com a mesma configuração  
+- Página `/admin` para limpeza manual de participantes  
+- Design mobile-first e responsivo
 
+## ⚙️ Como Executar Localmente
+```bash
+# Clone o repositório
+git clone git@github.com:Gonzaga-Dev/sorteio-amplify.git
 
+# Instale dependências
+npm install
 
-## 🔧 Tecnologias Utilizadas
+# Configure o Amplify
+amplify init
+amplify push
 
-- **Next.js** (App Router)
-- **React** (Componentes client-side)
-- **AWS Amplify** (DataStore para persistência e hospedagem)
-- **AWS Amplify Hosting** (Deploy automático)
-- **Quantum Random Number Generator (QRNG)** (Sorteio com aleatoriedade verdadeira via ANU)
+# Inicie em modo de desenvolvimento
+npm run dev
+```  
+Acesse `http://localhost:3000` para usar o sistema de sorteios.
 
-
-
-
-
-## 🔍 Funcionalidades
-
-- Cadastro de participantes através de campo de texto + botão "Participar"
-- Exibição responsiva da lista de participantes em ordem de chegada
-- Utiliza gerador quântico de números aleatórios para garantir sorteio justo
-- Nome sorteado é automaticamente removido da lista após o sorteio
-- Reset automático da lista de participantes 2 horas após o último sorteio
-- Painel Administrativo (/admin) para limpeza manual de todos os participantes
-- Página 100% responsiva para desktop e dispositivos móveis
-
-
-
-
-
-## 📊 Principais Features
-
-| Recurso | Status |
-|:---|:---|
-| Cadastro dinâmico de participantes | ✅ Implementado |
-| Sorteio quântico de participantes | ✅ Implementado |
-| Exclusão automática do vencedor | ✅ Implementado |
-| Reset automático da lista após 2 horas | ✅ Implementado |
-| Página administrativa para limpeza manual | ✅ Implementado |
-| Design responsivo (mobile-first) | ✅ Implementado |
-
-
-
-
-
-## 🚀 Melhorias Futuras
-
-- **Autenticação** para acesso restrito à página /admin
-- **Suporte a multiplos sorteios simultâneos** com especificação prévia dos itens a serem sorteados
-- **Histórico de sorteios realizados** (armazenar vencedores e prêmios anteriores)
-- **Customização visual** (cores e logo da empresa)
-
-
-
+## 🛣️ Roadmap
+- Histórico de sorteios
+- Sistema anti-fraude (Detecção de múltiplos nomes com mesmo IP)
+- Customização de tema e identidade visual  
+- Métricas de participação e frequência de sorteios na página /admin
 
 
 ## 💼 Licença
