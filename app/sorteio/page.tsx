@@ -38,63 +38,56 @@ export default function App() {
   }, []);
 
   function addParticipant() {
-    if (newParticipant.trim() === "") return;
-    if (participants.some((p) => p.content === newParticipant.trim())) {
+    const name = newParticipant.trim();
+    if (!name) return;
+    if (participants.some(p => p.content === name)) {
       alert("Você já está cadastrado");
       return;
     }
-    client.models.Todo.create({ content: newParticipant.trim() });
+    client.models.Todo.create({ content: name });
     setNewParticipant("");
   }
 
   async function getQuantumRandomIndex(max: number) {
     try {
-      const response = await fetch(
+      const res = await fetch(
         `https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16`
       );
-      const data = await response.json();
-      if (data.success && data.data && data.data.length > 0) {
-        return data.data[0] % max;
+      const json = await res.json();
+      if (json.success && json.data?.length) {
+        return json.data[0] % max;
       }
     } catch (error) {
-      console.error(
-        "QRNG fetch failed, falling back to Math.random()",
-        error
-      );
+      console.error("QRNG fetch failed, falling back to Math.random()", error);
     }
     return Math.floor(Math.random() * max);
   }
 
   async function drawParticipant() {
-    if (participants.length === 0 || isDrawing) return;
+    if (!participants.length || isDrawing) return;
 
     setIsDrawing(true);
     setShowFireworks(false);
     setSelected([]);
+    setCurrentRoll(null);
 
     let rounds = 10;
     let delay = 30;
 
-    async function roll() {
-      const randomIndex = Math.floor(
-        Math.random() * participants.length
-      );
-      setCurrentRoll(participants[randomIndex]);
+    async function rollAnimation() {
+      const idx = Math.floor(Math.random() * participants.length);
+      setCurrentRoll(participants[idx]);
       rounds--;
-
       if (rounds > 0) {
         delay += 15;
-        setTimeout(roll, delay);
+        setTimeout(rollAnimation, delay);
       } else {
-        const winners: Array<Schema["Todo"]["type"]> = [];
         const available = [...participants];
-        for (
-          let i = 0;
-          i < Math.min(drawCount, available.length);
-          i++
-        ) {
-          const idx = await getQuantumRandomIndex(available.length);
-          winners.push(available.splice(idx, 1)[0]);
+        const winners: Array<Schema["Todo"]["type"]> = [];
+        const count = Math.min(drawCount, available.length);
+        for (let i = 0; i < count; i++) {
+          const j = await getQuantumRandomIndex(available.length);
+          winners.push(available.splice(j, 1)[0]);
         }
         setSelected(winners);
         setShowFireworks(true);
@@ -103,7 +96,7 @@ export default function App() {
       }
     }
 
-    roll();
+    rollAnimation();
   }
 
   return (
@@ -185,7 +178,7 @@ export default function App() {
       >
         <input
           value={newParticipant}
-          onChange={(e) => setNewParticipant(e.target.value)}
+          onChange={e => setNewParticipant(e.target.value)}
           placeholder="Nome Completo"
           style={{
             flex: "1 1 300px",
@@ -217,30 +210,14 @@ export default function App() {
       <ul
         style={{ listStyle: "none", padding: 0, width: "100%", maxWidth: "600px", zIndex: 1 }}
       >
-        {participants.map((participant, index) => (
+        {participants.map((p, i) => (
           <li
-            key={participant.id}
+            key={p.id}
             style={{
-              backgroundColor: selected.some(
-                (w) => w.id === participant.id
-              )
-                ? "#FF8000"
-                : "#333333",
-              color: selected.some(
-                (w) => w.id === participant.id
-              )
-                ? "#000000"
-                : "#FFCE00",
-              fontWeight: selected.some(
-                (w) => w.id === participant.id
-              )
-                ? "bold"
-                : "normal",
-              border: selected.some(
-                (w) => w.id === participant.id
-              )
-                ? "2px solid #FFCE00"
-                : "none",
+              backgroundColor: selected.some(w => w.id === p.id) ? "#FF8000" : "#333333",
+              color: selected.some(w => w.id === p.id) ? "#000000" : "#FFCE00",
+              fontWeight: selected.some(w => w.id === p.id) ? "bold" : "normal",
+              border: selected.some(w => w.id === p.id) ? "2px solid #FFCE00" : "none",
               padding: "10px",
               marginBottom: "10px",
               borderRadius: "5px",
@@ -248,30 +225,22 @@ export default function App() {
               textAlign: "center",
             }}
           >
-            {index + 1}. {participant.content}
+            {i + 1}. {p.content}
           </li>
         ))}
       </ul>
 
-      {/* Destaque dos vencedores logo após a lista */}
       {selected.length > 0 && (
-        <div
-          style={{ textAlign: "center", marginTop: "2rem", zIndex: 1 }}
-        >
+        <div style={{ textAlign: "center", marginTop: "2rem", zIndex: 1 }}>
           <h2 style={{ color: "#FFCE00" }}>
             Participante{selected.length > 1 ? "s" : ""} Sorteado{selected.length > 1 ? "s" : ""}:
           </h2>
-          {selected.map((winner) => (
+          {selected.map(w => (
             <p
-              key={winner.id}
-              style={{
-                fontSize: selected.length > 1 ? "1.2rem" : "2rem",
-                fontWeight: "bold",
-                color: "#FF8000",
-                margin: "0.5rem 0",
-              }}
+              key={w.id}
+              style={{ fontSize: selected.length > 1 ? "1.2rem" : "2rem", fontWeight: "bold", color: "#FF8000", margin: "0.5rem 0" }}
             >
-              {winner.content}
+              {w.content}
             </p>
           ))}
         </div>
@@ -283,7 +252,7 @@ export default function App() {
           type="number"
           min="1"
           value={drawCount}
-          onChange={(e) => setDrawCount(Math.max(1, Number(e.target.value)))}
+          onChange={e => setDrawCount(Math.max(1, Number(e.target.value)))}
           style={{ marginLeft: "10px", width: "50px" }}
         />
       </div>
@@ -303,7 +272,7 @@ export default function App() {
             opacity: isDrawing ? 0.7 : 1,
           }}
         >
-          Iniciar Sorteio
+          {isDrawing ? "Sorteando..." : "Iniciar Sorteio"}
         </button>
       </div>
 
