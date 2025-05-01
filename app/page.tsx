@@ -12,22 +12,22 @@ const client = generateClient<Schema>();
 
 export default function App() {
   const [participants, setParticipants] = useState<Array<Schema["Todo"]["type"]>>([]);
-  const [selected, setSelected] = useState<Schema["Todo"]["type"] | null>(null);
+  const [selected, setSelected] = useState<Array<Schema["Todo"]["type"]>>([]);
   const [currentRoll, setCurrentRoll] = useState<Schema["Todo"]["type"] | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [showFireworks, setShowFireworks] = useState(false);
   const [newParticipant, setNewParticipant] = useState("");
+  const [drawCount, setDrawCount] = useState(1);
 
   function listParticipants() {
     client.models.Todo.observeQuery().subscribe({
       next: (data) => {
-        const sortedList = [...data.items].sort((a, b) => {
-          if (a.createdAt && b.createdAt) {
-            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          }
-          return 0;
-        });
-        setParticipants(sortedList);
+        const sorted = [...data.items].sort((a, b) =>
+          a.createdAt && b.createdAt
+            ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            : 0
+        );
+        setParticipants(sorted);
       },
     });
   }
@@ -37,133 +37,143 @@ export default function App() {
   }, []);
 
   function addParticipant() {
-    if (newParticipant.trim() === "") return;
-    client.models.Todo.create({ content: newParticipant.trim() });
+    const name = newParticipant.trim();
+    if (!name) return;
+    if (participants.some((p) => p.content.toLowerCase() === name.toLowerCase())) {
+      alert("Já está cadastrado");
+      return;
+    }
+    client.models.Todo.create({ content: name });
     setNewParticipant("");
   }
 
   async function getQuantumRandomIndex(max: number) {
     try {
-      const response = await fetch(`https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16`);
-      const data = await response.json();
-      if (data.success && data.data && data.data.length > 0) {
-        return data.data[0] % max;
-      }
-      return Math.floor(Math.random() * max);
-    } catch (error) {
-      console.error("QRNG fetch failed, falling back to Math.random()", error);
+      const res = await fetch(
+        `https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16`
+      );
+      const data = await res.json();
+      return data.success && data.data?.length
+        ? data.data[0] % max
+        : Math.floor(Math.random() * max);
+    } catch {
       return Math.floor(Math.random() * max);
     }
   }
 
   async function drawParticipant() {
-    if (participants.length === 0 || isDrawing) return;
-
+    if (!participants.length || isDrawing) return;
     setIsDrawing(true);
     setShowFireworks(false);
-    setSelected(null);
+    setSelected([]);
+    setCurrentRoll(null);
 
+    // animação breve
     let rounds = 10;
     let delay = 30;
-
-    async function roll() {
-      const randomIndex = Math.floor(Math.random() * participants.length);
-      setCurrentRoll(participants[randomIndex]);
-      rounds--;
-
-      if (rounds > 0) {
+    function roll() {
+      const idx = Math.floor(Math.random() * participants.length);
+      setCurrentRoll(participants[idx]);
+      if (--rounds > 0) {
         delay += 15;
         setTimeout(roll, delay);
-      } else {
-        const finalIndex = await getQuantumRandomIndex(participants.length);
-        const winner = participants[finalIndex];
-        setSelected(winner);
-        setShowFireworks(true);
-        setTimeout(() => setShowFireworks(false), 3000);
-        setIsDrawing(false);
-
-        // Deletar o nome sorteado imediatamente
-        if (winner && winner.id) {
-          await client.models.Todo.delete({ id: winner.id });
-        }
-
-        // Programar para limpar toda a lista 2 horas depois
-        setTimeout(async () => {
-          const result = await client.models.Todo.list();
-          const deletions = result.data.map((item) => client.models.Todo.delete({ id: item.id }));
-          await Promise.all(deletions);
-        }, 2 * 60 * 60 * 1000); // 2 horas
       }
     }
-
     roll();
+
+    // após animação, seleciona múltiplos
+    setTimeout(async () => {
+      const winners: Array<Schema["Todo"]["type"]> = [];
+      const used = new Set<string>();
+      for (let i = 0; i < drawCount; i++) {
+        const idx = await getQuantumRandomIndex(participants.length);
+        const p = participants[idx];
+        if (!used.has(p.id)) {
+          used.add(p.id);
+          winners.push(p);
+        } else {
+          i--; // repete se já sorteado
+        }
+      }
+      setSelected(winners);
+      setShowFireworks(true);
+      setIsDrawing(false);
+      setTimeout(() => setShowFireworks(false), 3000);
+    }, 500 + rounds * delay);
   }
 
   return (
-    <main style={{
-      width: "100%",
-      maxWidth: "100%",
-      minHeight: "100vh",
-      backgroundColor: "#000000",
-      color: "#FFCE00",
-      fontFamily: "Arial, sans-serif",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      padding: "2rem",
-      boxSizing: "border-box",
-      overflow: "hidden"
-    }}>
-
+    <main
+      style={{
+        width: "100%",
+        minHeight: "100vh",
+        backgroundColor: "#000000",
+        color: "#FFCE00",
+        fontFamily: "Arial, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "2rem",
+        boxSizing: "border-box",
+      }}
+    >
       {showFireworks && (
-        <div style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-          zIndex: 0
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+          }}
+        >
           {Array.from({ length: 10 }).map((_, i) => (
             <div
               key={i}
               style={{
                 position: "absolute",
-                top: Math.random() * 100 + "%",
-                left: Math.random() * 100 + "%",
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
                 width: "10px",
                 height: "10px",
                 backgroundColor: i % 2 === 0 ? "#FFCE00" : "#FF8000",
                 borderRadius: "50%",
                 animation: "explode 1s ease-out forwards",
-                animationDelay: `${i * 0.2}s`
+                animationDelay: `${i * 0.2}s`,
               }}
             />
           ))}
           <style>{`
             @keyframes explode {
-              0% { transform: scale(0) translateY(0); opacity: 1; }
-              100% { transform: scale(2) translateY(-100px); opacity: 0; }
+              0% { transform: scale(0); opacity: 1; }
+              100% { transform: scale(2); opacity: 0; }
             }
           `}</style>
         </div>
       )}
 
-      <h1 style={{ textAlign: "center", marginBottom: "2rem", fontSize: "clamp(1.5rem, 5vw, 2.5rem)", zIndex: 1 }}>
+      <h1
+        style={{
+          textAlign: "center",
+          marginBottom: "2rem",
+          fontSize: "clamp(1.5rem, 5vw, 2.5rem)",
+        }}
+      >
         [Data&AI] Monthly Checkpoint
       </h1>
 
-      <div style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "1rem",
-        justifyContent: "center",
-        marginBottom: "2rem",
-        width: "100%",
-        maxWidth: "600px",
-        zIndex: 1
-      }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "1rem",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          marginBottom: "1rem",
+          width: "100%",
+          maxWidth: "600px",
+        }}
+      >
         <input
           value={newParticipant}
           onChange={(e) => setNewParticipant(e.target.value)}
@@ -175,7 +185,7 @@ export default function App() {
             borderRadius: "5px",
             border: "2px solid #FFCE00",
             backgroundColor: "#333333",
-            color: "#FFCE00"
+            color: "#FFCE00",
           }}
         />
         <button
@@ -188,42 +198,81 @@ export default function App() {
             fontSize: "1rem",
             borderRadius: "5px",
             cursor: "pointer",
-            flexShrink: 0
           }}
         >
           Participar
         </button>
       </div>
 
-      <ul style={{ listStyle: "none", padding: 0, width: "100%", maxWidth: "600px", zIndex: 1 }}>
-        {participants.map((participant, index) => (
+      <div style={{ marginBottom: "1rem" }}>
+        <label style={{ marginRight: "0.5rem" }}>
+          Quantos sorteados?
+        </label>
+        <input
+          type="number"
+          min={1}
+          max={participants.length}
+          value={drawCount}
+          onChange={(e) => setDrawCount(Number(e.target.value) || 1)}
+          style={{
+            width: "4rem",
+            padding: "5px",
+            borderRadius: "5px",
+            border: "2px solid #FFCE00",
+            backgroundColor: "#333333",
+            color: "#FFCE00",
+            textAlign: "center",
+          }}
+        />
+      </div>
+
+      <ul
+        style={{
+          listStyle: "none",
+          padding: 0,
+          width: "100%",
+          maxWidth: "600px",
+          marginBottom: "2rem",
+        }}
+      >
+        {participants.map((p, i) => (
           <li
-            key={participant.id}
+            key={p.id}
             style={{
-              backgroundColor: selected?.id === participant.id ? "#FF8000" : "#333333",
-              color: selected?.id === participant.id ? "#000000" : "#FFCE00",
-              fontWeight: selected?.id === participant.id ? "bold" : "normal",
-              border: selected?.id === participant.id ? "2px solid #FFCE00" : "none",
+              backgroundColor: selected.some((w) => w.id === p.id)
+                ? "#FF8000"
+                : "#333333",
+              color: selected.some((w) => w.id === p.id)
+                ? "#000000"
+                : "#FFCE00",
+              fontWeight: selected.some((w) => w.id === p.id)
+                ? "bold"
+                : "normal",
               padding: "10px",
               marginBottom: "10px",
               borderRadius: "5px",
-              transition: "all 0.3s ease",
-              textAlign: "center"
+              textAlign: "center",
             }}
           >
-            {index + 1}. {participant.content}
+            {i + 1}. {p.content}
           </li>
         ))}
       </ul>
 
-      {selected && (
-        <div style={{ textAlign: "center", marginTop: "2rem", zIndex: 1 }}>
-          <h2 style={{ color: "#FFCE00" }}>Participante Sorteado:</h2>
-          <p style={{ fontSize: "2rem", fontWeight: "bold", color: "#FF8000" }}>{selected.content}</p>
+      {selected.length > 0 && (
+        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+          <h2 style={{ color: "#FFCE00" }}>Participantes Sorteados:</h2>
+          <p style={{
+            fontSize: "1.25rem",
+            fontWeight: "bold",
+            color: "#FF8000",
+          }}>
+            {selected.map((w) => w.content).join(", ")}
+          </p>
         </div>
       )}
 
-      <div style={{ marginTop: "3rem", zIndex: 1 }}>
+      <div>
         <button
           onClick={drawParticipant}
           disabled={isDrawing}
@@ -235,23 +284,14 @@ export default function App() {
             fontSize: "1rem",
             borderRadius: "5px",
             cursor: isDrawing ? "not-allowed" : "pointer",
-            opacity: isDrawing ? 0.7 : 1
+            opacity: isDrawing ? 0.7 : 1,
           }}
         >
           Iniciar Sorteio
         </button>
       </div>
 
-      <style>{`
-        @keyframes pulse {
-          0% { transform: scale(1); }
-          100% { transform: scale(1.1); }
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
+      <style>{`@keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } } @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
     </main>
   );
 }
