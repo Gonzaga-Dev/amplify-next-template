@@ -44,7 +44,7 @@ export default function App() {
 
   async function getQuantumRandomIndex(max: number) {
     try {
-      const response = await fetch(https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16);
+      const response = await fetch(`https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16`);
       const data = await response.json();
       if (data.success && data.data && data.data.length > 0) {
         return data.data[0] % max;
@@ -137,16 +137,16 @@ export default function App() {
                 backgroundColor: i % 2 === 0 ? "#FFCE00" : "#FF8000",
                 borderRadius: "50%",
                 animation: "explode 1s ease-out forwards",
-                animationDelay: ${i * 0.2}s
+                animationDelay: `${i * 0.2}s`
               }}
             />
           ))}
-          <style>{
+          <style>{`
             @keyframes explode {
               0% { transform: scale(0) translateY(0); opacity: 1; }
               100% { transform: scale(2) translateY(-100px); opacity: 0; }
             }
-          }</style>
+          `}</style>
         </div>
       )}
 
@@ -242,7 +242,7 @@ export default function App() {
         </button>
       </div>
 
-      <style>{
+      <style>{`
         @keyframes pulse {
           0% { transform: scale(1); }
           100% { transform: scale(1.1); }
@@ -251,7 +251,7 @@ export default function App() {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-      }</style>
+      `}</style>
     </main>
   );
 }
