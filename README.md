@@ -19,7 +19,7 @@ Aplicativo de sorteio online construído com **Next.js** e hospedado no **AWS Am
 ## ⚙️ Como Executar Localmente
 ```bash
 # Clone o repositório
-git clone git@github.com:Gonzaga-Dev/sorteio-amplify.git
+git clone https://github.com/Gonzaga-Dev/sorteio-amplify.git
 
 # Instale dependências
 npm install
