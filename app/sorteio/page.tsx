@@ -12,7 +12,7 @@ const client = generateClient<Schema>();
 
 export default function App() {
   const [participants, setParticipants] = useState<Array<Schema["Todo"]["type"]>>([]);
-  const [selected, setSelected] = useState<Schema["Todo"]["type"] | null>(null);
+  const [selected, setSelected] = useState<Array<Schema["Todo"]["type"]>>([]);
   const [currentRoll, setCurrentRoll] = useState<Schema["Todo"]["type"] | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [showFireworks, setShowFireworks] = useState(false);
@@ -54,11 +54,10 @@ export default function App() {
       if (data.success && data.data && data.data.length > 0) {
         return data.data[0] % max;
       }
-      return Math.floor(Math.random() * max);
     } catch (error) {
       console.error("QRNG fetch failed, falling back to Math.random()", error);
-      return Math.floor(Math.random() * max);
     }
+    return Math.floor(Math.random() * max);
   }
 
   async function drawParticipant() {
@@ -66,7 +65,7 @@ export default function App() {
 
     setIsDrawing(true);
     setShowFireworks(false);
-    setSelected(null);
+    setSelected([]);
 
     let rounds = 10;
     let delay = 30;
@@ -86,15 +85,10 @@ export default function App() {
           const idx = await getQuantumRandomIndex(available.length);
           winners.push(available.splice(idx, 1)[0]);
         }
-        if (winners.length === 1) {
-          setSelected(winners[0]);
-        } else {
-          setSelected(null);
-        }
+        setSelected(winners);
         setShowFireworks(true);
         setTimeout(() => setShowFireworks(false), 3000);
         setIsDrawing(false);
-        // remoção de deleção após sorteio e limpeza programada mantida removida
       }
     }
 
@@ -142,7 +136,7 @@ export default function App() {
                 backgroundColor: i % 2 === 0 ? "#FFCE00" : "#FF8000",
                 borderRadius: "50%",
                 animation: "explode 1s ease-out forwards",
-                animationDelay: `${i * 0.2}s`,  
+                animationDelay: `${i * 0.2}s`,
               }}
             />
           ))}
@@ -207,10 +201,10 @@ export default function App() {
           <li
             key={participant.id}
             style={{
-              backgroundColor: selected?.id === participant.id ? "#FF8000" : "#333333",
-              color: selected?.id === participant.id ? "#000000" : "#FFCE00",
-              fontWeight: selected?.id === participant.id ? "bold" : "normal",
-              border: selected?.id === participant.id ? "2px solid #FFCE00" : "none",
+              backgroundColor: selected.some(w => w.id === participant.id) ? "#FF8000" : "#333333",
+              color: selected.some(w => w.id === participant.id) ? "#000000" : "#FFCE00",
+              fontWeight: selected.some(w => w.id === participant.id) ? "bold" : "normal",
+              border: selected.some(w => w.id === participant.id) ? "2px solid #FFCE00" : "none",
               padding: "10px",
               marginBottom: "10px",
               borderRadius: "5px",
@@ -233,6 +227,22 @@ export default function App() {
           style={{ marginLeft: "10px", width: "50px" }}
         />
       </div>
+
+      {selected.length > 0 && (
+        <div style={{ textAlign: "center", marginTop: "1rem", zIndex: 1 }}>
+          <h2 style={{ color: "#FFCE00" }}>
+            Participante{selected.length > 1 ? "s" : ""} Sorteado{selected.length > 1 ? "s" : ""}:
+          </h2>
+          {selected.map((winner) => (
+            <p
+              key={winner.id}
+              style={{ fontSize: selected.length > 1 ? "1.2rem" : "2rem", fontWeight: "bold", color: "#FF8000", margin: "0.5rem 0" }}
+            >
+              {winner.content}
+            </p>
+          ))}
+        </div>
+      )}
 
       <div style={{ marginTop: "3rem", zIndex: 1 }}>
         <button
