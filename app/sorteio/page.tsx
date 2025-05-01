@@ -39,7 +39,7 @@ export default function App() {
 
   function addParticipant() {
     if (newParticipant.trim() === "") return;
-    if (participants.some(p => p.content === newParticipant.trim())) {
+    if (participants.some((p) => p.content === newParticipant.trim())) {
       alert("Você já está cadastrado");
       return;
     }
@@ -80,17 +80,21 @@ export default function App() {
         delay += 15;
         setTimeout(roll, delay);
       } else {
-        const winnersSet = new Set<Schema["Todo"]["type"]>();
-        while (winnersSet.size < Math.min(drawCount, participants.length)) {
-          const finalIndex = await getQuantumRandomIndex(participants.length);
-          winnersSet.add(participants[finalIndex]);
+        const winners: Array<Schema["Todo"]["type"]> = [];
+        const available = [...participants];
+        for (let i = 0; i < Math.min(drawCount, available.length); i++) {
+          const idx = await getQuantumRandomIndex(available.length);
+          winners.push(available.splice(idx, 1)[0]);
         }
-
-        const winners = Array.from(winnersSet);
-        setSelected(winners.length === 1 ? winners[0] : null);
+        if (winners.length === 1) {
+          setSelected(winners[0]);
+        } else {
+          setSelected(null);
+        }
         setShowFireworks(true);
         setTimeout(() => setShowFireworks(false), 3000);
         setIsDrawing(false);
+        // remoção de deleção após sorteio e limpeza programada mantida removida
       }
     }
 
@@ -98,31 +102,34 @@ export default function App() {
   }
 
   return (
-    <main style={{
-      width: "100%",
-      maxWidth: "100%",
-      minHeight: "100vh",
-      backgroundColor: "#000000",
-      color: "#FFCE00",
-      fontFamily: "Arial, sans-serif",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      padding: "2rem",
-      boxSizing: "border-box",
-      overflow: "hidden"
-    }}>
-
+    <main
+      style={{
+        width: "100%",
+        maxWidth: "100%",
+        minHeight: "100vh",
+        backgroundColor: "#000000",
+        color: "#FFCE00",
+        fontFamily: "Arial, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "2rem",
+        boxSizing: "border-box",
+        overflow: "hidden",
+      }}
+    >
       {showFireworks && (
-        <div style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-          zIndex: 0
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        >
           {Array.from({ length: 10 }).map((_, i) => (
             <div
               key={i}
@@ -135,10 +142,16 @@ export default function App() {
                 backgroundColor: i % 2 === 0 ? "#FFCE00" : "#FF8000",
                 borderRadius: "50%",
                 animation: "explode 1s ease-out forwards",
-                animationDelay: `${i * 0.2}s`
+                animationDelay: `${i * 0.2}s`,  
               }}
             />
           ))}
+          <style>{`
+            @keyframes explode {
+              0% { transform: scale(0) translateY(0); opacity: 1; }
+              100% { transform: scale(2) translateY(-100px); opacity: 0; }
+            }
+          `}</style>
         </div>
       )}
 
@@ -146,17 +159,110 @@ export default function App() {
         [Data&AI] Monthly Checkpoint
       </h1>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "center", marginBottom: "2rem", width: "100%", maxWidth: "600px", zIndex: 1 }}>
-        <input value={newParticipant} onChange={(e) => setNewParticipant(e.target.value)} placeholder="Nome Completo" style={{ flex: "1 1 300px", padding: "10px", fontSize: "1rem", borderRadius: "5px", border: "2px solid #FFCE00", backgroundColor: "#333333", color: "#FFCE00" }} />
-        <button onClick={addParticipant} style={{ backgroundColor: "#FF8000", color: "#000000", border: "none", padding: "10px 20px", fontSize: "1rem", borderRadius: "5px", cursor: "pointer" }}>Participar</button>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "1rem",
+          justifyContent: "center",
+          marginBottom: "2rem",
+          width: "100%",
+          maxWidth: "600px",
+          zIndex: 1,
+        }}
+      >
+        <input
+          value={newParticipant}
+          onChange={(e) => setNewParticipant(e.target.value)}
+          placeholder="Nome Completo"
+          style={{
+            flex: "1 1 300px",
+            padding: "10px",
+            fontSize: "1rem",
+            borderRadius: "5px",
+            border: "2px solid #FFCE00",
+            backgroundColor: "#333333",
+            color: "#FFCE00",
+          }}
+        />
+        <button
+          onClick={addParticipant}
+          style={{
+            backgroundColor: "#FF8000",
+            color: "#000000",
+            border: "none",
+            padding: "10px 20px",
+            fontSize: "1rem",
+            borderRadius: "5px",
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          Participar
+        </button>
       </div>
 
-      <div style={{ marginBottom: "2rem" }}>
-        <label>Quantos nomes sortear?</label>
-        <input type="number" value={drawCount} onChange={(e) => setDrawCount(Math.max(1, parseInt(e.target.value)))} style={{ marginLeft: "10px", width: "50px" }} />
+      <ul style={{ listStyle: "none", padding: 0, width: "100%", maxWidth: "600px", zIndex: 1 }}>
+        {participants.map((participant, index) => (
+          <li
+            key={participant.id}
+            style={{
+              backgroundColor: selected?.id === participant.id ? "#FF8000" : "#333333",
+              color: selected?.id === participant.id ? "#000000" : "#FFCE00",
+              fontWeight: selected?.id === participant.id ? "bold" : "normal",
+              border: selected?.id === participant.id ? "2px solid #FFCE00" : "none",
+              padding: "10px",
+              marginBottom: "10px",
+              borderRadius: "5px",
+              transition: "all 0.3s ease",
+              textAlign: "center",
+            }}
+          >
+            {index + 1}. {participant.content}
+          </li>
+        ))}
+      </ul>
+
+      <div style={{ marginTop: "3rem", zIndex: 1 }}>
+        <label>Quantidade de Sorteados:</label>
+        <input
+          type="number"
+          min="1"
+          value={drawCount}
+          onChange={(e) => setDrawCount(Math.max(1, Number(e.target.value)))}
+          style={{ marginLeft: "10px", width: "50px" }}
+        />
       </div>
 
-      <button onClick={drawParticipant} disabled={isDrawing}>Iniciar Sorteio</button>
+      <div style={{ marginTop: "3rem", zIndex: 1 }}>
+        <button
+          onClick={drawParticipant}
+          disabled={isDrawing}
+          style={{
+            backgroundColor: isDrawing ? "#666666" : "#FFCE00",
+            color: "#000000",
+            border: "none",
+            padding: "10px 20px",
+            fontSize: "1rem",
+            borderRadius: "5px",
+            cursor: isDrawing ? "not-allowed" : "pointer",
+            opacity: isDrawing ? 0.7 : 1,
+          }}
+        >
+          Iniciar Sorteio
+        </button>
+      </div>
+
+      <style>{`
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          100% { transform: scale(1.1); }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </main>
   );
 }
