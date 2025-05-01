@@ -16,6 +16,17 @@ Aplicativo de sorteio online construído com **Next.js** e hospedado no **AWS Am
 - Página `/admin` para limpeza manual de participantes  
 - Design mobile-first e responsivo
 
+
+## ⚙️ Pré-requisitos
+- **Node.js** versão 14 ou superior
+- **npm** (vem com Node.js) ou **Yarn**
+- **AWS CLI** configurado com suas credenciais
+- **Amplify CLI** instalado globalmente:
+  ```bash
+  npm install -g @aws-amplify/cli
+  ```
+
+
 ## ⚙️ Como Executar Localmente
 ```bash
 # Clone o repositório
@@ -31,7 +42,7 @@ amplify push
 # Inicie em modo de desenvolvimento
 npm run dev
 ```  
-Acesse `http://localhost:3000` para usar o sistema de sorteios.
+Acesse `http://localhost:3000` para testar.
 
 ## 🛣️ Roadmap
 - Histórico de sorteios
