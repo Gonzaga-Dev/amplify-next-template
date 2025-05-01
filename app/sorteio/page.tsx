@@ -49,13 +49,18 @@ export default function App() {
 
   async function getQuantumRandomIndex(max: number) {
     try {
-      const response = await fetch(`https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16`);
+      const response = await fetch(
+        `https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16`
+      );
       const data = await response.json();
       if (data.success && data.data && data.data.length > 0) {
         return data.data[0] % max;
       }
     } catch (error) {
-      console.error("QRNG fetch failed, falling back to Math.random()", error);
+      console.error(
+        "QRNG fetch failed, falling back to Math.random()",
+        error
+      );
     }
     return Math.floor(Math.random() * max);
   }
@@ -71,7 +76,9 @@ export default function App() {
     let delay = 30;
 
     async function roll() {
-      const randomIndex = Math.floor(Math.random() * participants.length);
+      const randomIndex = Math.floor(
+        Math.random() * participants.length
+      );
       setCurrentRoll(participants[randomIndex]);
       rounds--;
 
@@ -81,7 +88,11 @@ export default function App() {
       } else {
         const winners: Array<Schema["Todo"]["type"]> = [];
         const available = [...participants];
-        for (let i = 0; i < Math.min(drawCount, available.length); i++) {
+        for (
+          let i = 0;
+          i < Math.min(drawCount, available.length);
+          i++
+        ) {
           const idx = await getQuantumRandomIndex(available.length);
           winners.push(available.splice(idx, 1)[0]);
         }
@@ -129,8 +140,8 @@ export default function App() {
               key={i}
               style={{
                 position: "absolute",
-                top: Math.random() * 100 + "%",
-                left: Math.random() * 100 + "%",
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
                 width: "10px",
                 height: "10px",
                 backgroundColor: i % 2 === 0 ? "#FFCE00" : "#FF8000",
@@ -149,7 +160,14 @@ export default function App() {
         </div>
       )}
 
-      <h1 style={{ textAlign: "center", marginBottom: "2rem", fontSize: "clamp(1.5rem, 5vw, 2.5rem)", zIndex: 1 }}>
+      <h1
+        style={{
+          textAlign: "center",
+          marginBottom: "2rem",
+          fontSize: "clamp(1.5rem, 5vw, 2.5rem)",
+          zIndex: 1,
+        }}
+      >
         [Data&AI] Monthly Checkpoint
       </h1>
 
@@ -196,15 +214,33 @@ export default function App() {
         </button>
       </div>
 
-      <ul style={{ listStyle: "none", padding: 0, width: "100%", maxWidth: "600px", zIndex: 1 }}>
+      <ul
+        style={{ listStyle: "none", padding: 0, width: "100%", maxWidth: "600px", zIndex: 1 }}
+      >
         {participants.map((participant, index) => (
           <li
             key={participant.id}
             style={{
-              backgroundColor: selected.some(w => w.id === participant.id) ? "#FF8000" : "#333333",
-              color: selected.some(w => w.id === participant.id) ? "#000000" : "#FFCE00",
-              fontWeight: selected.some(w => w.id === participant.id) ? "bold" : "normal",
-              border: selected.some(w => w.id === participant.id) ? "2px solid #FFCE00" : "none",
+              backgroundColor: selected.some(
+                (w) => w.id === participant.id
+              )
+                ? "#FF8000"
+                : "#333333",
+              color: selected.some(
+                (w) => w.id === participant.id
+              )
+                ? "#000000"
+                : "#FFCE00",
+              fontWeight: selected.some(
+                (w) => w.id === participant.id
+              )
+                ? "bold"
+                : "normal",
+              border: selected.some(
+                (w) => w.id === participant.id
+              )
+                ? "2px solid #FFCE00"
+                : "none",
               padding: "10px",
               marginBottom: "10px",
               borderRadius: "5px",
@@ -217,7 +253,31 @@ export default function App() {
         ))}
       </ul>
 
-      <div style={{ marginTop: "3rem", zIndex: 1 }}>
+      {/* Destaque dos vencedores logo após a lista */}
+      {selected.length > 0 && (
+        <div
+          style={{ textAlign: "center", marginTop: "2rem", zIndex: 1 }}
+        >
+          <h2 style={{ color: "#FFCE00" }}>
+            Participante{selected.length > 1 ? "s" : ""} Sorteado{selected.length > 1 ? "s" : ""}:
+          </h2>
+          {selected.map((winner) => (
+            <p
+              key={winner.id}
+              style={{
+                fontSize: selected.length > 1 ? "1.2rem" : "2rem",
+                fontWeight: "bold",
+                color: "#FF8000",
+                margin: "0.5rem 0",
+              }}
+            >
+              {winner.content}
+            </p>
+          ))}
+        </div>
+      )}
+
+      <div style={{ marginTop: "2rem", zIndex: 1 }}>
         <label>Quantidade de Sorteados:</label>
         <input
           type="number"
@@ -227,22 +287,6 @@ export default function App() {
           style={{ marginLeft: "10px", width: "50px" }}
         />
       </div>
-
-      {selected.length > 0 && (
-        <div style={{ textAlign: "center", marginTop: "1rem", zIndex: 1 }}>
-          <h2 style={{ color: "#FFCE00" }}>
-            Participante{selected.length > 1 ? "s" : ""} Sorteado{selected.length > 1 ? "s" : ""}:
-          </h2>
-          {selected.map((winner) => (
-            <p
-              key={winner.id}
-              style={{ fontSize: selected.length > 1 ? "1.2rem" : "2rem", fontWeight: "bold", color: "#FF8000", margin: "0.5rem 0" }}
-            >
-              {winner.content}
-            </p>
-          ))}
-        </div>
-      )}
 
       <div style={{ marginTop: "3rem", zIndex: 1 }}>
         <button
