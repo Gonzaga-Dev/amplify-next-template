@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Auth, Amplify } from "aws-amplify";
+import { useState } from "react";
+import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
@@ -10,31 +10,8 @@ Amplify.configure(outputs);
 const client = generateClient<Schema>();
 
 export default function AdminPage() {
-  const [loading, setLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
-
   const [isClearing, setIsClearing] = useState(false);
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    Auth.currentAuthenticatedUser()
-      .then(() => setAuthenticated(true))
-      .catch(() => setAuthenticated(false))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return <p>Carregando autenticação...</p>;
-  }
-
-  if (!authenticated) {
-    return (
-      <main style={{ padding: "2rem", textAlign: "center", color: "red" }}>
-        <h2>🔒 Acesso restrito</h2>
-        <p>Você precisa estar logado para acessar esta página.</p>
-      </main>
-    );
-  }
 
   async function clearAllParticipants() {
     const confirmClear = window.confirm("Você tem certeza que deseja apagar TODOS os participantes?");
