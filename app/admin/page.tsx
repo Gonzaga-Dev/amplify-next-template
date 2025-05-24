@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Auth, Amplify } from "aws-amplify";
+import { Amplify } from "aws-amplify";
+import { getCurrentUser } from "aws-amplify/auth";
 import outputs from "@/amplify_outputs.json";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
@@ -12,12 +13,11 @@ const client = generateClient<Schema>();
 export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
-
   const [isClearing, setIsClearing] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    Auth.currentAuthenticatedUser()
+    getCurrentUser()
       .then(() => setAuthenticated(true))
       .catch(() => setAuthenticated(false))
       .finally(() => setLoading(false));
