@@ -18,6 +18,7 @@ export default function App() {
   const [showFireworks, setShowFireworks] = useState(false);
   const [newParticipant, setNewParticipant] = useState("");
   const [drawCount, setDrawCount] = useState(1);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   function listParticipants() {
     client.models.Todo.observeQuery().subscribe({
@@ -50,9 +51,7 @@ export default function App() {
 
   async function getQuantumRandomIndex(max: number) {
     try {
-      const res = await fetch(
-        `https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16`
-      );
+      const res = await fetch(`https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16`);
       const json = await res.json();
       if (json.success && json.data?.length) {
         return json.data[0] % max;
@@ -70,6 +69,7 @@ export default function App() {
     setShowFireworks(false);
     setSelected([]);
     setCurrentRoll(null);
+    setCountdown(null);
 
     let rounds = 10;
     let delay = 30;
@@ -89,10 +89,22 @@ export default function App() {
           const j = await getQuantumRandomIndex(available.length);
           winners.push(available.splice(j, 1)[0]);
         }
-        setSelected(winners);
-        setShowFireworks(true);
-        setTimeout(() => setShowFireworks(false), 3000);
-        setIsDrawing(false);
+
+        // Contagem regressiva de 5s antes de mostrar os vencedores
+        let time = 5;
+        setCountdown(time);
+        const interval = setInterval(() => {
+          time--;
+          setCountdown(time);
+          if (time === 0) {
+            clearInterval(interval);
+            setSelected(winners);
+            setShowFireworks(true);
+            setTimeout(() => setShowFireworks(false), 3000);
+            setCountdown(null);
+            setIsDrawing(false);
+          }
+        }, 1000);
       }
     }
 
@@ -153,29 +165,11 @@ export default function App() {
         </div>
       )}
 
-      <h1
-        style={{
-          textAlign: "center",
-          marginBottom: "2rem",
-          fontSize: "clamp(1.5rem, 5vw, 2.5rem)",
-          zIndex: 1,
-        }}
-      >
+      <h1 style={{ textAlign: "center", marginBottom: "2rem", fontSize: "clamp(1.5rem, 5vw, 2.5rem)", zIndex: 1 }}>
         [Data&AI] Monthly Checkpoint
       </h1>
 
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "1rem",
-          justifyContent: "center",
-          marginBottom: "2rem",
-          width: "100%",
-          maxWidth: "600px",
-          zIndex: 1,
-        }}
-      >
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "center", marginBottom: "2rem", width: "100%", maxWidth: "600px", zIndex: 1 }}>
         <input
           value={newParticipant}
           onChange={e => setNewParticipant(e.target.value)}
@@ -207,9 +201,7 @@ export default function App() {
         </button>
       </div>
 
-      <ul
-        style={{ listStyle: "none", padding: 0, width: "100%", maxWidth: "600px", zIndex: 1 }}
-      >
+      <ul style={{ listStyle: "none", padding: 0, width: "100%", maxWidth: "600px", zIndex: 1 }}>
         {participants.map((p, i) => (
           <li
             key={p.id}
@@ -230,21 +222,19 @@ export default function App() {
         ))}
       </ul>
 
+      {countdown !== null && (
+        <div style={{ marginTop: "2rem", textAlign: "center", fontSize: "2rem", fontWeight: "bold", color: "#FFCE00", zIndex: 1 }}>
+          Revelando em {countdown}...
+        </div>
+      )}
+
       {selected.length > 0 && (
         <div style={{ textAlign: "center", marginTop: "2rem", zIndex: 1 }}>
           <h2 style={{ color: "#FFCE00" }}>
             Participante{selected.length > 1 ? "s" : ""} Sorteado{selected.length > 1 ? "s" : ""}:
           </h2>
           {selected.map((w, idx) => (
-            <p
-              key={w.id}
-              style={{
-                fontSize: selected.length > 1 ? "1.2rem" : "2rem",
-                fontWeight: "bold",
-                color: "#FF8000",
-                margin: "0.5rem 0",
-              }}
-            >
+            <p key={w.id} style={{ fontSize: selected.length > 1 ? "1.2rem" : "2rem", fontWeight: "bold", color: "#FF8000", margin: "0.5rem 0" }}>
               {`${idx + 1}º ${w.content}`}
             </p>
           ))}
@@ -280,17 +270,6 @@ export default function App() {
           {isDrawing ? "Sorteando..." : "Iniciar Sorteio"}
         </button>
       </div>
-
-      <style>{`
-        @keyframes pulse {
-          0% { transform: scale(1); }
-          100% { transform: scale(1.1); }
-        }
-        @keyframes spin {
-          0% { transform이 rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </main>
   );
 }
