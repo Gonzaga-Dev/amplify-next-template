@@ -223,10 +223,47 @@ export default function App() {
       </ul>
 
       {countdown !== null && (
-        <div style={{ marginTop: "2rem", textAlign: "center", fontSize: "2rem", fontWeight: "bold", color: "#FFCE00", zIndex: 1 }}>
-          Revelando em {countdown}...
-        </div>
-      )}
+  <div
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100vw",
+      height: "100vh",
+      backgroundColor: "rgba(0, 0, 0, 0.8)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 999,
+      pointerEvents: "none",
+    }}
+  >
+    <div
+      style={{
+        width: "120px",
+        height: "120px",
+        borderRadius: "50%",
+        backgroundColor: "#FFCE00",
+        color: "#000",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "3rem",
+        fontWeight: "bold",
+        animation: "pulse-countdown 1s ease-in-out infinite",
+      }}
+    >
+      {countdown}
+    </div>
+    <style>{`
+      @keyframes pulse-countdown {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+    `}</style>
+  </div>
+)}
 
       {selected.length > 0 && (
         <div style={{ textAlign: "center", marginTop: "2rem", zIndex: 1 }}>
