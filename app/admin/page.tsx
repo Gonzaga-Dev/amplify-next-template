@@ -6,11 +6,14 @@ import { useState } from "react";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 
+// Novo import:
+import { withAuthenticator } from "@aws-amplify/ui-react";
+
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
-export default function AdminPage() {
+function AdminPage() {
   const [isClearing, setIsClearing] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -100,3 +103,6 @@ export default function AdminPage() {
     </main>
   );
 }
+
+// 🔐 Exporta a página com autenticação obrigatória
+export default withAuthenticator(AdminPage);
